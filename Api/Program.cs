@@ -1,3 +1,4 @@
+using Core.Entities;
 using Core.Interfaces;
 using Infrastructure.Services;
 
@@ -11,7 +12,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
-
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 
 var app = builder.Build();

@@ -1,15 +1,28 @@
-﻿using Core.Interfaces;
+﻿using System.Net;
 using System.Net.Mail;
+using Core.Entities;
+using Core.Interfaces;
+using Microsoft.Extensions.Options;
 
 namespace Infrastructure.Services
 {
     public class EmailService : IEmailService
     {
-        public async Task SendEmailAsync(string to, string subject, string body)
+        private readonly EmailSettings _emailSettings;
+
+        public EmailService(IOptions<EmailSettings> emailSettings)
         {
-            using (var client = new SmtpClient("smtp.your-email-provider.com"))
+            _emailSettings = emailSettings.Value;
+        }
+
+        public async Task SendEmailAsync(string subject, string body)
+        {
+            using (var client = new SmtpClient(_emailSettings.SmtpServer, _emailSettings.SmtpPort))
             {
-                var mailMessage = new MailMessage("from@example.com", to, subject, body);
+                client.Credentials = new NetworkCredential(_emailSettings.FromEmail, _emailSettings.Password);
+                client.EnableSsl = true;
+
+                var mailMessage = new MailMessage(_emailSettings.FromEmail, _emailSettings.ToEmail, subject, body);
                 await client.SendMailAsync(mailMessage);
             }
         }
