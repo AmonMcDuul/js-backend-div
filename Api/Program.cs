@@ -14,6 +14,17 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowSpecificOrigin",
+        builder =>
+        {
+            builder.WithOrigins("https://amonmcduul.github.io")
+                   .AllowAnyMethod()
+                   .AllowAnyHeader()
+                   .AllowCredentials();
+        });
+});
 
 var app = builder.Build();
 
@@ -30,9 +41,11 @@ if (app.Environment.IsDevelopment())
             "http://localhost:4200", "http://localhost:4201")
         .AllowCredentials();
     });
-}
+} 
 
 app.UseRouting();
+
+app.UseCors("AllowSpecificOrigin");
 
 app.UseHttpsRedirection();
 
