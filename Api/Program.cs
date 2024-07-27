@@ -1,6 +1,8 @@
-using Core.Entities;
+using Core.Entities.EmailModels;
 using Core.Interfaces;
+using Infrastructure.Data;
 using Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +14,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
+
+builder.Services.AddDbContext<JsDbContext>(
+    options => options
+    .UseSqlServer(builder.Configuration.GetConnectionString("database")));
+
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddCors(options =>
@@ -41,7 +48,30 @@ if (app.Environment.IsDevelopment())
             "http://localhost:4200", "http://localhost:4201")
         .AllowCredentials();
     });
-} 
+}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    JsDbContext dbContext = services.GetRequiredService<JsDbContext>();
+
+    if (dbContext.Database.IsSqlServer())
+    {
+        if (dbContext.Database.GetPendingMigrations().Any())
+        {
+            string query = "USE master; ALTER DATABASE [jsdivers] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [jsdivers];";
+            try
+            {
+                await dbContext.Database.ExecuteSqlRawAsync(query);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Database not deleted because it didn't exist" + e);
+            }
+            dbContext.Database.Migrate();
+        }
+    }
+}
 
 app.UseRouting();
 

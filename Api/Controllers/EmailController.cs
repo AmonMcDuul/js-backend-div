@@ -1,4 +1,4 @@
-﻿using Core.Entities;
+﻿using Core.Entities.EmailModels;
 using Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

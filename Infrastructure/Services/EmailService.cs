@@ -1,6 +1,6 @@
 ﻿using System.Net;
 using System.Net.Mail;
-using Core.Entities;
+using Core.Entities.EmailModels;
 using Core.Interfaces;
 using Microsoft.Extensions.Options;
 
