@@ -50,28 +50,28 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
-    JsDbContext dbContext = services.GetRequiredService<JsDbContext>();
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+//    JsDbContext dbContext = services.GetRequiredService<JsDbContext>();
 
-    if (dbContext.Database.IsSqlServer())
-    {
-        if (dbContext.Database.GetPendingMigrations().Any())
-        {
-            string query = "USE master; ALTER DATABASE [jsdivers] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [jsdivers];";
-            try
-            {
-                await dbContext.Database.ExecuteSqlRawAsync(query);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Database not deleted because it didn't exist" + e);
-            }
-            dbContext.Database.Migrate();
-        }
-    }
-}
+//    if (dbContext.Database.IsSqlServer())
+//    {
+//        if (dbContext.Database.GetPendingMigrations().Any())
+//        {
+//            string query = "USE master; ALTER DATABASE [jsdivers] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [jsdivers];";
+//            try
+//            {
+//                await dbContext.Database.ExecuteSqlRawAsync(query);
+//            }
+//            catch (Exception e)
+//            {
+//                Console.WriteLine("Database not deleted because it didn't exist" + e);
+//            }
+//            dbContext.Database.Migrate();
+//        }
+//    }
+//}
 
 app.UseRouting();
 
