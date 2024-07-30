@@ -27,7 +27,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder.AllowAnyMethod().AllowAnyHeader().WithOrigins(
-                "https://amonmcduul.github.io", "https://amonmcduul.github.io/space-trader", "https://scholsdev.azurewebsites.net")
+                "https://amonmcduul.github.io", "https://scholsdev.azurewebsites.net")
             .AllowCredentials();
         });
 });
