@@ -12,6 +12,7 @@ namespace Infrastructure.Services
     {
         private readonly JsDbContext _context;
         private readonly IHighScoreCacheService _highScoreCacheService;
+        private static int _isSyncing = 0;
 
         public HighScoreSyncService(JsDbContext context, IHighScoreCacheService highScoreCacheService)
         {
@@ -32,13 +33,16 @@ namespace Infrastructure.Services
                 }
                 catch
                 {
-                    await Task.Delay(10000); // Retry after 10 seconds if database is paused
+                    await Task.Delay(10000);
                 }
             }
         }
 
         public async Task SyncCacheWithDatabaseAsync()
         {
+            if (Interlocked.CompareExchange(ref _isSyncing, 1, 0) == 1)
+                return; 
+
             try
             {
                 var highScores = await _context.HighScores.ToListAsync();
@@ -55,7 +59,11 @@ namespace Infrastructure.Services
             }
             catch
             {
-                // Handle if sync fails
+                await Task.Delay(10000);
+            }
+            finally
+            {
+                Interlocked.Exchange(ref _isSyncing, 0); 
             }
         }
     }
