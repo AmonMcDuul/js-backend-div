@@ -21,4 +21,6 @@ namespace Api.ViewModels
         public string Alias { get; set; } = "";
         public GameTypeState GameTypeState { get; set; }
     }
+
+
 }

@@ -21,6 +21,8 @@ builder.Services.AddDbContext<JsDbContext>(
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddSingleton<IHighScoreCacheService, HighScoreCacheService>();
+builder.Services.AddScoped<IHighScoreSyncService, HighScoreSyncService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
