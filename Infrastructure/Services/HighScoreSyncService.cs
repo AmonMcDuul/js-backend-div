@@ -22,7 +22,7 @@ namespace Infrastructure.Services
         }
             
 
-        public async Task SyncCacheWithDatabaseAsync()
+        public async Task SyncCacheWithDatabaseAsync() 
         {
             if (Interlocked.CompareExchange(ref _isSyncing, 1, 0) == 1)
                 return;
@@ -67,15 +67,23 @@ namespace Infrastructure.Services
                     using (var scope = _serviceProvider.CreateScope())
                     {
                         var context = scope.ServiceProvider.GetRequiredService<JsDbContext>();
-                        context.HighScores.Add(newHighScore);
-                        await context.SaveChangesAsync();
-                        saved = true;
+
+                        // This retry policy automatically handles transient faults
+                        var retryPolicy = context.Database.CreateExecutionStrategy();
+                        await retryPolicy.ExecuteAsync(async () =>
+                        {
+                            context.HighScores.Add(newHighScore);
+                            await context.SaveChangesAsync();
+                            saved = true;
+                        });
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    await Task.Delay(10000);
+                    throw;
                 }
+
+                await Task.Delay(10000);
             }
         }
     }

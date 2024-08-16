@@ -63,13 +63,14 @@ namespace Api.Controllers
             }
 
             var newHighScore = new HighScore(request.Score, request.Alias, request.GameTypeState);
-            var newHighScoreResponse = new HighScoreResponseModel(newHighScore);
             var cachedResponse = new HighScoreModel(newHighScore);
             _highScoreCacheService.AddHighScoreToCache(cachedResponse);
 
-            Task.Run(() => _highScoreSyncService.SaveHighScoreAsync(newHighScore));
+            _ = Task.Run(() => _highScoreSyncService.SaveHighScoreAsync(newHighScore));
 
             return Ok();
         }
+
+
     }
 }
