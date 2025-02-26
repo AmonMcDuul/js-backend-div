@@ -13,8 +13,6 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddControllers();
-
 builder.Services.AddDbContext<JsDbContext>(
     options => options
     .UseSqlServer(builder.Configuration.GetConnectionString("database")));
@@ -29,7 +27,7 @@ builder.Services.AddCors(options =>
         builder =>
         {
             builder.AllowAnyMethod().AllowAnyHeader().WithOrigins(
-                "https://amonmcduul.github.io", "https://scholsdev.azurewebsites.net")
+                "https://amonmcduul.github.io", "https://scholsdev.azurewebsites.net", "https://flamsoft.nl", "https://flamsoft.netlify.app", "https://flamsoft.info")
             .AllowCredentials();
         });
 });
