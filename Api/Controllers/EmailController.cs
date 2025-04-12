@@ -14,7 +14,13 @@ namespace Api.Controllers
         {
             _emailService = emailService;
         }
-         
+
+        [HttpGet("setalive")]
+        public async Task<IActionResult> SetAlive()
+        {
+            return Ok();
+        }
+
         [HttpPost("send")]
         public async Task<IActionResult> SendEmail([FromBody] EmailRequest request)
         {
