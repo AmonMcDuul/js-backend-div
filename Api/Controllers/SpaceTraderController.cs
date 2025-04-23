@@ -5,6 +5,7 @@ using Api.ViewModels;
 using Infrastructure.Data;
 using Microsoft.Data.SqlClient;
 using Infrastructure.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Api.Controllers
 {
@@ -13,44 +14,18 @@ namespace Api.Controllers
     public class SpaceTraderController : ControllerBase
     {
         private readonly JsDbContext _context;
-        private readonly IHighScoreCacheService _highScoreCacheService;
-        private readonly IHighScoreSyncService _highScoreSyncService;
 
         public SpaceTraderController(
-            JsDbContext context,
-            IHighScoreCacheService highScoreCacheService,
-            IHighScoreSyncService highScoreSyncService)
+            JsDbContext context)
         {
             _context = context;
-            _highScoreCacheService = highScoreCacheService;
-            _highScoreSyncService = highScoreSyncService;
         }
 
         [HttpGet("highscore")]
-        public ActionResult<ICollection<HighScoreResponseModel>> GetHighScore()
+        public async Task<ActionResult<ICollection<HighScoreResponseModel>>> GetHighScoreAsync()
         {
-            var cachedScores = _highScoreCacheService.GetHighScores();
-            if (cachedScores.Any())
-            {
-                _highScoreSyncService.SyncCacheWithDatabaseAsync();
-                return Ok(cachedScores);
-            }
-
-            var highScores = _context.HighScores.ToList();
-            var groupedAndSortedScores = highScores
-                .GroupBy(h => h.GameTypeState)
-                .SelectMany(g => g.OrderByDescending(h => h.Score))
-                .ToList();
-
-            var result = groupedAndSortedScores
-                .Select(item => new HighScoreResponseModel(item))
-                .ToList();  
-
-            var cachedResults = result
-                .Select(item => new HighScoreModel(item.Score, item.Alias, item.GameTypeState))
-                .ToList();
-
-            _highScoreCacheService.UpdateCache(cachedResults);
+            var highScores = await _context.HighScores.OrderByDescending(h => h.Score).ToListAsync();
+            var result = highScores.Select(h => new HighScoreResponseModel(h));
             return Ok(result);
         }
 
@@ -63,10 +38,8 @@ namespace Api.Controllers
             }
 
             var newHighScore = new HighScore(request.Score, request.Alias, request.GameTypeState);
-            var cachedResponse = new HighScoreModel(newHighScore);
-            _highScoreCacheService.AddHighScoreToCache(cachedResponse);
-
-            _ = Task.Run(() => _highScoreSyncService.SaveHighScoreAsync(newHighScore));
+            _context.HighScores.Add(newHighScore);
+            await _context.SaveChangesAsync();
 
             return Ok();
         }

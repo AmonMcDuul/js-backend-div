@@ -31,14 +31,8 @@ if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
 builder.Services.AddDbContext<JsDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
-//builder.Services.AddDbContext<JsDbContext>(
-//    options => options
-//    .UseSqlServer(builder.Configuration.GetConnectionString("database")));
-
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
-builder.Services.AddSingleton<IHighScoreCacheService, HighScoreCacheService>();
-builder.Services.AddScoped<IHighScoreSyncService, HighScoreSyncService>();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
@@ -66,29 +60,6 @@ if (app.Environment.IsDevelopment())
         .AllowCredentials();
     });
 }
-
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
-//    JsDbContext dbContext = services.GetRequiredService<JsDbContext>();
-
-//    if (dbContext.Database.IsSqlServer())
-//    {
-//        if (dbContext.Database.GetPendingMigrations().Any())
-//        {
-//            string query = "USE master; ALTER DATABASE [jsdivers] SET SINGLE_USER WITH ROLLBACK IMMEDIATE; DROP DATABASE [jsdivers];";
-//            try
-//            {
-//                await dbContext.Database.ExecuteSqlRawAsync(query);
-//            }
-//            catch (Exception e)
-//            {
-//                Console.WriteLine("Database not deleted because it didn't exist" + e);
-//            }
-//            dbContext.Database.Migrate();
-//        }
-//    }
-//}
 
 using (var scope = app.Services.CreateScope())
 {
