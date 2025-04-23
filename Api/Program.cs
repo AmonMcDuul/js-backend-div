@@ -14,19 +14,20 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var dbPath = builder.Environment.IsDevelopment()
-    ? Path.Combine("Data", "highscores.db")
+    ? Path.Combine("Data", "highscores.db") 
     : Path.Combine(
         Environment.GetEnvironmentVariable("HOME") ?? string.Empty,
-        "site",
-        "wwwroot",
+        "data", 
         "highscores.db");
 
+// Ensure directory exists
 var directory = Path.GetDirectoryName(dbPath);
-if (!Directory.Exists(directory) && directory != null)
+if (!Directory.Exists(directory) && !string.IsNullOrEmpty(directory))
 {
     Directory.CreateDirectory(directory);
 }
 
+// Register DbContext
 builder.Services.AddDbContext<JsDbContext>(options =>
     options.UseSqlite($"Data Source={dbPath}"));
 
