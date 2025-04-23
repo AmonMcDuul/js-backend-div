@@ -13,9 +13,26 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddDbContext<JsDbContext>(
-    options => options
-    .UseSqlServer(builder.Configuration.GetConnectionString("database")));
+var dbPath = builder.Environment.IsDevelopment()
+    ? Path.Combine("Data", "highscores.db")
+    : Path.Combine(
+        Environment.GetEnvironmentVariable("HOME") ?? string.Empty,
+        "site",
+        "wwwroot",
+        "highscores.db");
+
+var directory = Path.GetDirectoryName(dbPath);
+if (!Directory.Exists(directory) && directory != null)
+{
+    Directory.CreateDirectory(directory);
+}
+
+builder.Services.AddDbContext<JsDbContext>(options =>
+    options.UseSqlite($"Data Source={dbPath}"));
+
+//builder.Services.AddDbContext<JsDbContext>(
+//    options => options
+//    .UseSqlServer(builder.Configuration.GetConnectionString("database")));
 
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddScoped<IEmailService, EmailService>();
@@ -71,6 +88,28 @@ if (app.Environment.IsDevelopment())
 //        }
 //    }
 //}
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
+    var dbContext = services.GetRequiredService<JsDbContext>();
+
+    try
+    {
+        if (dbContext.Database.IsSqlite())
+        {
+            logger.LogInformation("Applying migrations...");
+            dbContext.Database.Migrate();
+            logger.LogInformation("Migrations applied successfully");
+        }
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "An error occurred while migrating the database");
+        throw;
+    }
+}
 
 app.UseRouting();
 
